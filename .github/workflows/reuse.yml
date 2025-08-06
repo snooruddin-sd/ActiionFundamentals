@@ -1,26 +1,14 @@
-name: Reusable workflow
+name: Reuse other workflow
 
-on:
-  workflow_call:
-    inputs:
-      who-to-greet:
-        description: 'The person to greet'
-        type: string
-        required: true
-        default: World
-    outputs:
-      current-time:
-        description: 'The time when greeting.'
-        value: ${{ jobs.reusable-job.outputs.current-time }}
+on: [workflow_dispatch]
 
 jobs:
-  reusable-job:
+  call-workflow:
+    uses: ./.github/workflows/reusable.yml
+    with:
+      who-to-greet: '@octocat'
+  use-output:
     runs-on: ubuntu-latest
-    outputs:
-      current-time: ${{ steps.time.outputs.time }}
+    needs: [call-workflow]
     steps:
-      - name: Greet someone
-        run: echo "Hello ${{ inputs.who-to-greet }}"
-      - name: Set time
-        id: time
-        run: echo "time=$(date)" >> $GITHUB_OUTPUT
+      - run: echo "Time was ${{ needs.call-workflow.outputs.current-time }}"
